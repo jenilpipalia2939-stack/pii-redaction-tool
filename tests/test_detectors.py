@@ -2,6 +2,8 @@ from detectors import detect_phone_numbers
 from detectors import detect_ip_addresses
 from detectors import detect_ssn
 from detectors import detect_credit_cards
+from detectors import detect_dates_of_birth
+from detectors import detect_full_names
 
 
 def test_detect_indian_phone_number():
@@ -118,3 +120,78 @@ def test_ignore_normal_long_number():
     cards = detect_credit_cards(text)
 
     assert len(cards) == 0
+
+def test_detect_dob_slash_format():
+    text = "Date of Birth: 15/08/1998"
+
+    result = detect_dates_of_birth(text)
+
+    assert len(result) == 1
+    assert result[0]["type"] == "DATE_OF_BIRTH"
+    assert result[0]["value"] == "15/08/1998"
+
+
+def test_detect_dob_hyphen_format():
+    text = "DOB: 15-08-1998"
+
+    result = detect_dates_of_birth(text)
+
+    assert len(result) == 1
+    assert result[0]["value"] == "15-08-1998"
+
+
+def test_detect_dob_text_format():
+    text = "Birth Date: 15 August 1998"
+
+    result = detect_dates_of_birth(text)
+
+    assert len(result) == 1
+    assert result[0]["value"] == "15 August 1998"
+
+
+def test_do_not_detect_normal_date():
+    text = "Prospectus dated 10/12/2025"
+
+    result = detect_dates_of_birth(text)
+
+    assert len(result) == 0
+
+def test_detect_single_full_name():
+    text = "Contact Person: Sarthak Malvadkar"
+
+    result = detect_full_names(text)
+
+    assert len(result) == 1
+    assert result[0]["type"] == "FULL_NAME"
+    assert result[0]["value"] == "Sarthak Malvadkar"
+
+
+def test_detect_multiple_contact_persons():
+    text = "Contact Person: Lokesh Shah/ Soumavo Sarkar"
+
+    result = detect_full_names(text)
+
+    assert len(result) == 2
+    assert result[0]["value"] == "Lokesh Shah"
+    assert result[1]["value"] == "Soumavo Sarkar"
+
+
+def test_detect_five_contact_persons():
+    text = (
+        "Contact Person: Eric Bacha/ Sachin Gawade/ "
+        "Pravin Teli/ Siddharth Jadhav/ Tushar Gavankar"
+    )
+
+    result = detect_full_names(text)
+
+    assert len(result) == 5
+    assert result[0]["value"] == "Eric Bacha"
+    assert result[4]["value"] == "Tushar Gavankar"
+
+
+def test_do_not_detect_random_capitalized_words():
+    text = "KSH International Limited is located in Mumbai."
+
+    result = detect_full_names(text)
+
+    assert len(result) == 0

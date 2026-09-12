@@ -37,6 +37,26 @@ CREDIT_CARD_PATTERN = re.compile(
     r"(?!\d)"
 )
 
+DOB_PATTERN = re.compile(
+    r"(?i)"
+    r"(?:date\s+of\s+birth|dob|birth\s+date)"
+    r"\s*[:\-]?\s*"
+    r"("
+    r"\d{1,2}[/-]\d{1,2}[/-]\d{2,4}"
+    r"|"
+    r"\d{1,2}\s+[A-Za-z]+\s+\d{4}"
+    r"|"
+    r"[A-Za-z]+\s+\d{1,2},\s+\d{4}"
+    r")"
+)
+
+NAME_PATTERN = re.compile(
+    r"(?i)"
+    r"(?:contact\s+person|contact\s+persons?)"
+    r"\s*[:\-]\s*"
+    r"([^;\r\n]+)"
+)
+
 
 def detect_emails(text):
     matches = []
@@ -150,5 +170,111 @@ def detect_credit_cards(text):
             "start": match.start(),
             "end": match.end()
         })
+
+    return matches
+
+def detect_dates_of_birth(text):
+    matches = []
+
+    for match in DOB_PATTERN.finditer(text):
+        raw_value = match.group(1)
+
+        matches.append({
+            "type": "DATE_OF_BIRTH",
+            "value": raw_value,
+            "raw_value": raw_value,
+            "start": match.start(1),
+            "end": match.end(1)
+        })
+
+    return matches
+
+
+def is_valid_full_name(name):
+    words = name.strip().split()
+
+    if not 2 <= len(words) <= 5:
+        return False
+
+    blocked_words = {
+        "sebi",
+        "registration",
+        "number",
+        "no",
+        "website",
+        "email",
+        "telephone",
+        "contact",
+        "person",
+        "company",
+        "limited"
+    }
+
+    if any(word.lower() in blocked_words for word in words):
+        return False
+
+    return all(
+        re.fullmatch(r"[A-Za-z]+", word)
+        for word in words
+    )
+
+def is_valid_full_name(name):
+    words = name.strip().split()
+
+    if not 2 <= len(words) <= 5:
+        return False
+
+    blocked_words = {
+        "sebi",
+        "registration",
+        "number",
+        "no",
+        "website",
+        "email",
+        "telephone",
+        "contact",
+        "person",
+        "company",
+        "limited"
+    }
+
+    if any(word.lower() in blocked_words for word in words):
+        return False
+
+    return all(
+        re.fullmatch(r"[A-Za-z]+", word)
+        for word in words
+    )
+
+def detect_full_names(text):
+    matches = []
+
+    for match in NAME_PATTERN.finditer(text):
+        raw_value = match.group(1).strip()
+
+        names = re.split(r"\s*/\s*", raw_value)
+
+        current_position = match.start(1)
+
+        for name in names:
+            name = name.strip()
+
+            if not is_valid_full_name(name):
+                continue
+
+            start = text.find(name, current_position, match.end(1))
+
+            if start == -1:
+                continue
+
+            matches.append({
+                "type": "FULL_NAME",
+                "value": name,
+                "raw_value": name,
+                "start": start,
+                "end": start + len(name)
+            })
+
+            current_position = start + len(name)
 
     return matches
