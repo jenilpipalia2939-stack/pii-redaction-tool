@@ -1,15 +1,15 @@
-from extractor import extract_text_from_pdf
+from detectors import detect_emails
 
 
-pdf_path = "input/prospectus.pdf"
+text_file_path = "output/extracted_text.txt"
 
-text = extract_text_from_pdf(pdf_path)
+with open(text_file_path, "r", encoding="utf-8") as file:
+    text = file.read()
 
-output_path = "output/extracted_text.txt"
 
-with open(output_path, "w", encoding="utf-8") as file:
-    file.write(text)
+emails = detect_emails(text)
 
-print("PDF text extracted successfully.")
-print(f"Characters extracted: {len(text)}")
-print(f"Saved to: {output_path}")
+print(f"Emails detected: {len(emails)}")
+
+for email in emails[:20]:
+    print(email)
