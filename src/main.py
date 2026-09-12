@@ -1,4 +1,4 @@
-from detectors import detect_emails
+from detectors import detect_phone_numbers
 
 
 text_file_path = "output/extracted_text.txt"
@@ -7,9 +7,9 @@ with open(text_file_path, "r", encoding="utf-8") as file:
     text = file.read()
 
 
-emails = detect_emails(text)
+phones = detect_phone_numbers(text)
 
-print(f"Emails detected: {len(emails)}")
+print(f"Phone numbers detected: {len(phones)}")
 
-for email in emails[:20]:
-    print(email)
+for phone in phones:
+    print(phone["value"])
