@@ -1,4 +1,4 @@
-from detectors import detect_phone_numbers
+from detectors import detect_ip_addresses
 
 
 text_file_path = "output/extracted_text.txt"
@@ -7,9 +7,9 @@ with open(text_file_path, "r", encoding="utf-8") as file:
     text = file.read()
 
 
-phones = detect_phone_numbers(text)
+ips = detect_ip_addresses(text)
 
-print(f"Phone numbers detected: {len(phones)}")
+print(f"IP addresses detected: {len(ips)}")
 
-for phone in phones:
-    print(phone["value"])
+for ip in ips:
+    print(ip)

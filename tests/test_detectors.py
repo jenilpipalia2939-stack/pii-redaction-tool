@@ -1,4 +1,5 @@
 from detectors import detect_phone_numbers
+from detectors import detect_ip_addresses
 
 
 def test_detect_indian_phone_number():
@@ -34,3 +35,28 @@ def test_ignore_normal_number():
     phones = detect_phone_numbers(text)
 
     assert len(phones) == 0
+
+
+def test_detect_valid_ip_address():
+    text = "Client IP address: 192.168.1.100"
+
+    ips = detect_ip_addresses(text)
+
+    assert len(ips) == 1
+    assert ips[0]["value"] == "192.168.1.100"
+
+
+def test_reject_invalid_ip_address():
+    text = "Invalid IP address: 999.999.999.999"
+
+    ips = detect_ip_addresses(text)
+
+    assert len(ips) == 0
+
+
+def test_ignore_non_ip_number():
+    text = "The amount is 192.168.1000"
+
+    ips = detect_ip_addresses(text)
+
+    assert len(ips) == 0
