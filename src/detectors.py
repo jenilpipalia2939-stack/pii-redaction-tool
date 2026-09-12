@@ -31,6 +31,12 @@ SSN_PATTERN = re.compile(
     r"(?![\d-])"
 )
 
+CREDIT_CARD_PATTERN = re.compile(
+    r"(?<!\d)"
+    r"(?:\d[ -]?){13,19}"
+    r"(?!\d)"
+)
+
 
 def detect_emails(text):
     matches = []
@@ -98,6 +104,48 @@ def detect_ssn(text):
         matches.append({
             "type": "SSN",
             "value": raw_value,
+            "raw_value": raw_value,
+            "start": match.start(),
+            "end": match.end()
+        })
+
+    return matches
+
+def is_luhn_valid(number):
+    digits = [int(digit) for digit in number]
+
+    checksum = 0
+    parity = len(digits) % 2
+
+    for index, digit in enumerate(digits):
+        if index % 2 == parity:
+            digit *= 2
+
+            if digit > 9:
+                digit -= 9
+
+        checksum += digit
+
+    return checksum % 10 == 0
+
+
+def detect_credit_cards(text):
+    matches = []
+
+    for match in CREDIT_CARD_PATTERN.finditer(text):
+        raw_value = match.group(0)
+
+        normalized_value = re.sub(r"[ -]", "", raw_value)
+
+        if not 13 <= len(normalized_value) <= 19:
+            continue
+
+        if not is_luhn_valid(normalized_value):
+            continue
+
+        matches.append({
+            "type": "CREDIT_CARD",
+            "value": normalized_value,
             "raw_value": raw_value,
             "start": match.start(),
             "end": match.end()

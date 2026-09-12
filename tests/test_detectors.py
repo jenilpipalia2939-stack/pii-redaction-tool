@@ -1,6 +1,7 @@
 from detectors import detect_phone_numbers
 from detectors import detect_ip_addresses
 from detectors import detect_ssn
+from detectors import detect_credit_cards
 
 
 def test_detect_indian_phone_number():
@@ -84,3 +85,36 @@ def test_ignore_invalid_ssn_length():
     ssns = detect_ssn(text)
 
     assert len(ssns) == 0
+
+def test_detect_credit_card():
+    text = "Card number: 4111 1111 1111 1111"
+
+    cards = detect_credit_cards(text)
+
+    assert len(cards) == 1
+    assert cards[0]["value"] == "4111111111111111"
+
+
+def test_detect_hyphenated_credit_card():
+    text = "Card number: 4111-1111-1111-1111"
+
+    cards = detect_credit_cards(text)
+
+    assert len(cards) == 1
+    assert cards[0]["value"] == "4111111111111111"
+
+
+def test_reject_invalid_credit_card():
+    text = "Card number: 4111 1111 1111 1112"
+
+    cards = detect_credit_cards(text)
+
+    assert len(cards) == 0
+
+
+def test_ignore_normal_long_number():
+    text = "Reference number: 1234567890123456"
+
+    cards = detect_credit_cards(text)
+
+    assert len(cards) == 0
