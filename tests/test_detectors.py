@@ -4,6 +4,8 @@ from detectors import detect_ssn
 from detectors import detect_credit_cards
 from detectors import detect_dates_of_birth
 from detectors import detect_full_names
+from detectors import detect_company_names
+
 
 
 def test_detect_indian_phone_number():
@@ -195,3 +197,48 @@ def test_do_not_detect_random_capitalized_words():
     result = detect_full_names(text)
 
     assert len(result) == 0
+    
+def test_detect_limited_company():
+    text = "KSH International Limited"
+
+    result = detect_company_names(text)
+
+    assert len(result) == 1
+    assert result[0]["type"] == "COMPANY_NAME"
+    assert result[0]["value"] == "KSH International Limited"
+
+
+def test_detect_private_limited_company():
+    text = "MUFG Intime India Private Limited"
+
+    result = detect_company_names(text)
+
+    assert len(result) == 1
+    assert result[0]["value"] == "MUFG Intime India Private Limited"
+
+
+def test_detect_company_with_line_break():
+    text = "KSH Project Management Services Private\nLimited"
+
+    result = detect_company_names(text)
+
+    assert len(result) == 1
+    assert result[0]["value"] == "KSH Project Management Services Private Limited"
+
+
+def test_detect_llp():
+    text = "Example Consulting LLP"
+
+    result = detect_company_names(text)
+
+    assert len(result) == 1
+    assert result[0]["value"] == "Example Consulting LLP"
+
+
+def test_do_not_detect_normal_text():
+    text = "The company operates in Mumbai and Maharashtra."
+
+    result = detect_company_names(text)
+
+    assert len(result) == 0
+
