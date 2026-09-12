@@ -1,5 +1,6 @@
 from detectors import detect_phone_numbers
 from detectors import detect_ip_addresses
+from detectors import detect_ssn
 
 
 def test_detect_indian_phone_number():
@@ -60,3 +61,26 @@ def test_ignore_non_ip_number():
     ips = detect_ip_addresses(text)
 
     assert len(ips) == 0
+def test_detect_ssn():
+    text = "SSN: 123-45-6789"
+
+    ssns = detect_ssn(text)
+
+    assert len(ssns) == 1
+    assert ssns[0]["value"] == "123-45-6789"
+
+
+def test_ignore_number_without_ssn_format():
+    text = "Reference number: 123456789"
+
+    ssns = detect_ssn(text)
+
+    assert len(ssns) == 0
+
+
+def test_ignore_invalid_ssn_length():
+    text = "Invalid SSN: 123-456-789"
+
+    ssns = detect_ssn(text)
+
+    assert len(ssns) == 0

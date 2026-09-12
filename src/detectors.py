@@ -25,6 +25,13 @@ IP_PATTERN = re.compile(
     r"(?![\w.])"
 )
 
+SSN_PATTERN = re.compile(
+    r"(?<![\d-])"
+    r"\d{3}-\d{2}-\d{4}"
+    r"(?![\d-])"
+)
+
+
 def detect_emails(text):
     matches = []
 
@@ -74,6 +81,22 @@ def detect_ip_addresses(text):
 
         matches.append({
             "type": "IP_ADDRESS",
+            "value": raw_value,
+            "raw_value": raw_value,
+            "start": match.start(),
+            "end": match.end()
+        })
+
+    return matches
+
+def detect_ssn(text):
+    matches = []
+
+    for match in SSN_PATTERN.finditer(text):
+        raw_value = match.group(0)
+
+        matches.append({
+            "type": "SSN",
             "value": raw_value,
             "raw_value": raw_value,
             "start": match.start(),
